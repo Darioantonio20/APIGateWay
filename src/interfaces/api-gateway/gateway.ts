@@ -1,35 +1,25 @@
 import express from "express";
-import axios from "axios";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import { gatewayHealthCheck } from "./health-check";
 
 const app = express();
 app.use(express.json());
 
-app.use("/users", async (req, res) => {
-  try {
-    const response = await axios({
-      method: req.method,
-      url: `http://localhost:3001${req.url}`,
-      data: req.body,
-    });
-    res.status(response.status).json(response.data);
-  } catch (error: any) {
-    res.status(500).send("Users service is unavailable.");
-  }
-});
+app.use("/users", createProxyMiddleware({
+  target: "http://localhost:3001",
+  changeOrigin: true,
+  pathRewrite: {
+    "^/users": "",
+  },
+}));
 
-app.use("/products", async (req, res) => {
-  try {
-    const response = await axios({
-      method: req.method,
-      url: `http://localhost:3002${req.url}`,
-      data: req.body,
-    });
-    res.status(response.status).json(response.data);
-  } catch (error: any) {
-    res.status(500).send("Products service is unavailable.");
-  }
-});
+app.use("/products", createProxyMiddleware({
+  target: "http://localhost:3002",
+  changeOrigin: true,
+  pathRewrite: {
+    "^/products": "",
+  },
+}));
 
 app.get("/health", gatewayHealthCheck);
 

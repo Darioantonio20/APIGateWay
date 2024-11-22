@@ -14,8 +14,8 @@ app.get("/health", usersHealthCheck);
 
 app.post("/users", async (req: Request, res: Response) => {
   try {
-    const { name, email, age } = req.body;
-    const newUser = await User.create({ name, email, age });
+    const { name, email } = req.body;
+    const newUser = await User.create({ name, email });
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ message: "Error creating user", error });

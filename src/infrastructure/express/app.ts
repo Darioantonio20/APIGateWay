@@ -1,15 +1,23 @@
 import express from "express";
-import userRoutes from "./routes/users.routes";
-import productRoutes from "./routes/products.routes";
 
 const app = express();
 app.use(express.json());
 
-app.use("/users", userRoutes);
-app.use("/products", productRoutes);
+// Define rutas de ejemplo
+app.get("/", (req, res) => {
+  res.status(200).send("Service is working!");
+});
 
-app.get("/health", (req, res) => {
-  res.status(200).send("Application is healthy!");
+app.get("/example", (req, res) => {
+  res.status(200).json({ message: "Hello from Service" });
+});
+
+// Define el puerto
+const PORT = process.env.PORT || 3001; // Cambiar a 3002 para productos
+
+// Inicia el servidor
+app.listen(PORT, () => {
+  console.log(`Service running on http://localhost:${PORT}`);
 });
 
 export default app;

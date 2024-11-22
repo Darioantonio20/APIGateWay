@@ -1,45 +1,49 @@
 import express, { Request, Response } from "express";
-import axios from "axios";
+import { createProxyMiddleware, Options } from "http-proxy-middleware";
+import { gatewayHealthCheck } from "../src/interfaces/api-gateway/health-check";
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json()); 
+app.use(express.json());
 
-app.use("/users", async (req: Request, res: Response) => {
-  try {
-    const response = await axios({
-      method: req.method,
-      url: `http://localhost:3001${req.url}`,
-      data: req.body, 
-      headers: req.headers, 
-    });
-    res.status(response.status).json(response.data); 
-  } catch (error: any) {
-    console.error("Error in Users Service:", error.message);
-    res.status(error.response?.status || 500).send("Users service is unavailable.");
-  }
-});
+// Configuración del proxy para usuarios
+app.use(
+  "/users",
+  createProxyMiddleware({
+    target: "http://localhost:3001",
+    changeOrigin: true,
+    pathRewrite: { "^/users": "" },
+    onError: (err: Error, req: Request, res: Response) => {
+      console.error("Error in Users Service Proxy:", err.message);
+      res.status(500).send("Users service is unavailable.");
+    },
+  } as Options)
+);
 
-app.use("/products", async (req: Request, res: Response) => {
-  try {
-    const response = await axios({
-      method: req.method,
-      url: `http://localhost:3002${req.url}`,
-      data: req.body, 
-      headers: req.headers, 
-    });
-    res.status(response.status).json(response.data); 
-  } catch (error: any) {
-    console.error("Error in Products Service:", error.message);
-    res.status(error.response?.status || 500).send("Products service is unavailable.");
-  }
-});
+// Configuración del proxy para productos
+app.use(
+  "/products",
+  createProxyMiddleware({
+    target: "http://localhost:3002",
+    changeOrigin: true,
+    pathRewrite: { "^/products": "" },
+    onError: (err: Error, req: Request, res: Response) => {
+      console.error("Error in Products Service Proxy:", err.message);
+      res.status(500).send("Products service is unavailable.");
+    },
+  } as Options)
+);
 
-app.get("/health", (req: Request, res: Response) => {
-  res.status(200).send("API Gateway is healthy!");
+app.get("/health", gatewayHealthCheck);
+
+// Ruta raíz
+app.get("/", (req, res) => {
+  res.status(200).send("API Gateway is working!");
 });
 
 app.listen(PORT, () => {
   console.log(`API Gateway running on http://localhost:${PORT}`);
 });
+
+export default app;
