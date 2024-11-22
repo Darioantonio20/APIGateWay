@@ -9,7 +9,7 @@ app.use("/users", createProxyMiddleware({
   target: "http://localhost:3001",
   changeOrigin: true,
   pathRewrite: {
-    "^/users": "",
+    "^/users": "/users",
   },
 }));
 
@@ -17,7 +17,7 @@ app.use("/products", createProxyMiddleware({
   target: "http://localhost:3002",
   changeOrigin: true,
   pathRewrite: {
-    "^/products": "",
+    "^/products": "/products",
   },
 }));
 

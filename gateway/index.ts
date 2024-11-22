@@ -9,11 +9,11 @@ app.use(express.json());
 
 // Configuración del proxy para usuarios
 app.use(
-  "/users",
+  "/gatewayUser",
   createProxyMiddleware({
     target: "http://localhost:3001",
     changeOrigin: true,
-    pathRewrite: { "^/users": "" },
+    pathRewrite: { "^/users": "/users" },
     onError: (err: Error, req: Request, res: Response) => {
       console.error("Error in Users Service Proxy:", err.message);
       res.status(500).send("Users service is unavailable.");
@@ -23,11 +23,11 @@ app.use(
 
 // Configuración del proxy para productos
 app.use(
-  "/products",
+  "/gatewayProducts",
   createProxyMiddleware({
     target: "http://localhost:3002",
     changeOrigin: true,
-    pathRewrite: { "^/products": "" },
+    pathRewrite: { "^/products": "/products" },
     onError: (err: Error, req: Request, res: Response) => {
       console.error("Error in Products Service Proxy:", err.message);
       res.status(500).send("Products service is unavailable.");
@@ -37,7 +37,6 @@ app.use(
 
 app.get("/health", gatewayHealthCheck);
 
-// Ruta raíz
 app.get("/", (req, res) => {
   res.status(200).send("API Gateway is working!");
 });
